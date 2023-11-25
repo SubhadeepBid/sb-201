@@ -1,0 +1,1 @@
+[Docs Guide](https://masai-course.s3.ap-south-1.amazonaws.com/editor/uploads/2022-03-30/Day18_Maven_introduction_dependencies_ORM_introduction_Entity_class_Java_Persistence_620055.pdf)
