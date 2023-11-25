@@ -174,46 +174,41 @@ Build Tool : Maven
             --package.json ---- pom.xml
 
 
+    Structure of a maven project
+    ------------------------------
 
-src/main/java  : -- here we need to place our source code
+        src/main/java  : -- here we need to place our source code
 
-src/main/resources : any xml file, properties files, text files
-
-
-src/test/java  : -- here we need to place our source code to unit testing
-
-src/test/resources : any xml file, properties files, text files to unit testing
+        src/main/resources : any xml file, properties files, text files
 
 
+        src/test/java  : -- here we need to place our source code to unit testing
+
+        src/test/resources : any xml file, properties files, text files to unit testing
 
 
+        After creating a maven project we need to change the java version of the maven project from jdk 1.5 to jdk 17
 
 
-after creating a maven project we need to change the java  version of the maven project from jdk 5 to jdk 8
+        search in google: "maven compiler source"
+
+            <properties>
+                <maven.compiler.source>17</maven.compiler.source>
+                <maven.compiler.target>17</maven.compiler.target>
+            </properties>
 
 
+        After pasting the above tag inside the pom.xml file we need to update our maven project:
+
+        right click on the project--->maven ---> update maven project.(select force update)
 
 
-search in google: "maven compiler source"
-
- <properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-  </properties>
+        --to build our maven application : --->right click on the project----> Run as--->Maven build... -----> inside Goal type : clean package ----> run 
 
 
-after pasting the above tag inside the pom.xml file we need to update our maven project:
+        1.create the maven  by skipping architype selection
 
-right click on the project--->maven ---> update maven project.(select force update)
+        2.change the java version from 1.5 to 17
 
-
---to build our maven application : --->right click on the project----> Run as--->Maven build... -----> inside Goal type : clean package ----> run 
-
-
-1.create the maven  by skipping architype selection
-
-2.change the java version from 1.5 to 17
-
-3.take a <dependencies> tag and inside this tag paste any depedency jar file
-if it is required.
+        3.take a <dependencies> tag and inside this tag paste any depedency jar file if it is required.
 
