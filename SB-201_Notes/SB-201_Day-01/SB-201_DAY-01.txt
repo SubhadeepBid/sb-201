@@ -211,4 +211,3 @@ Build Tool : Maven
         2.change the java version from 1.5 to 17
 
         3.take a <dependencies> tag and inside this tag paste any depedency jar file if it is required.
-
