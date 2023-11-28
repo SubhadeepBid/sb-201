@@ -1,0 +1,66 @@
+=================
+| SB-201_DAY-04 |
+=================
+
+    Note : To see the ORM tool(HB) generated SQL queries on the console add the following property inside the persistence.xml
+
+        <property name="hibernate.show_sql"  value="true"/>
+
+    To create or update the table according to the entity class mapping information
+
+        <property name="hibernate.hbm2ddl.auto"  value="create"/>
+
+            create : Drop the existing table then create a fresh new table(s) and insert the record.
+
+            update : If table is not there then create a new table, and if table is already there it will perform insert operation only in the existing table.
+
+
+	Some of the annotations of JPA
+	--------------------------------
+
+		@Entity : To make a java bean class as entity , i.e to map with a table
+
+		@Id : To make a field as the ID field (to map with PK of a table)
+
+		@Table(name="mystudents") : If the table name and the class name is different
+
+		@Column(name="sname") : If the column name of table and corresponding variable of the class is diff.
+
+		@Transient : It will ignore the filed value.
+
+
+
+	Generators in JPA
+	-------------------
+
+		-- Generators are used to generate the ID filed value automatically.
+
+			@Id
+			@GeneratedValue(strategy=GenerationType.AUTO)
+			private int roll;
+
+
+			@Id
+			@GeneratedValue(strategy = GenerationType.IDENTITY)
+
+
+			@Id
+			@GeneratedValue(strategy=GenerationType.SEQUENCE, generator ="studentgen")
+			@SequenceGenerator(name="studentgen", sequenceName="sgen", allocationSize=1, initialValue=1)
+			private int roll;
+
+
+
+		-- Here roll will be generated automatically for each row.
+
+		**Note : if we use this @GeneratedValue annoation then we are not allowed to give the roll explicitly while inserting a record.
+
+		-- So we should create a object by using zero argument constrcutor and set the each value by calling setter method or we can use overloaded constructor which ignore the Id field.
+
+
+
+		AUTO : Internally underlaying ORM s/w creates a table called "hibernate_sequence" to maintain the Id value.(in JPA < 3.0 i.e javax version) but in JPA >= 3.0, it creates entityclassName_seq table inside the mysql database and uses hilow strategy to generate the ID filed.
+
+		IDENTITY : It is used for auto_increatement feature of mysql database to auto generate the id value
+
+		SEQUENCE : It is used for sequence feature to auto generate the id value [ BEST APPROACH { OPTIMIZED } ]
