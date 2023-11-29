@@ -1,0 +1,617 @@
+=================
+| SB-201_DAY-05 |
+=================
+
+
+    Limitations of EM methods in performing CRUD operations
+    ---------------------------------------------------------
+
+        persist();
+        find()
+        merge();
+        remove();
+
+
+
+        1. Retrieving Entity object based on only ID field(PK field) @Id.
+
+        2. Multiple Entity object retrival is not possible (multiple record).
+
+        3. Bulk update and bulk delete is also not possible.
+
+        4. To access Entity object we can not specify some extra condition.
+
+
+        -- To overcome the above limitation JPA has provided JPQL (java persistence query language).
+
+
+    JPQL(Java Persistence Query Language)
+    ---------------------------------------
+
+        Similarities between JPQL and SQL
+        -----------------------------------
+
+            -- Keywords in the both the langauges are case insensetive
+
+            -- GROUP BY, ORDER BY, WHERE clause are similar
+
+            -- Aggregrate function are similar
+
+            -- The way we express the condition to perform the CRUD operation is almost simmilar.
+
+
+        Difference between JPQL and SQL
+        ---------------------------------
+            -- SQL queries are expressed in the term of table and columns, where as jpql query is expressed in the term of Entity class names and its variables.
+
+            -- The name of the class and its variables are case sensitive.
+
+            -- SQL is not portable across multiple dbms, where jpql is portable.
+
+
+        sql> select name, marks from student; (name and marks are the column name and student is the table name)
+
+        jpql> select name, marks from Student; (here name and marks are the variables defined inside the Student class)
+
+
+        Note : We should not use * in jpql.
+            
+            Ex:
+
+                sql> select * from student;
+
+
+                jpql> from Student;   //projecting all the column
+                or
+                jpql> select s from Student s;
+
+                jpql> select s.name, s.marks from Student s; // [RECOMMENDED]
+                or
+                jpql> select name, marks from Student;
+
+
+        Steps to use the jpql in JPA application
+        ------------------------------------------
+
+            Step 1 : Develop the JPQL query as string.
+
+            Step 2 : Create jakarta.persistnce.Query(I) object by calling "createQuery(-)" method on the EM object.
+
+                Ex:
+
+                    Query q = em.createQuery("JPQL query");  
+
+                    Query object the Object Oriented representation of JPQL.
+
+            Step 3 : Bind the values if any placeholders are used. 
+                    
+                    Here we have 2 types of place holders 
+
+                        1. positional placeholders
+
+                        2. named placeholders
+
+            Step 4 : Submit the jpql query by calling either one of the following methods:
+
+
+                    For select statments:
+
+                        List getResultList();   (if more than one record.)
+                        Object getSingleResult();  (if atmost one record)
+
+
+                    For insert/update/delete (DML operation) : 
+
+                        int executeUpdate();  //this method should be called inside the tx area.
+
+                    Ex : 
+
+                    In SQL  : select * from account;
+
+                    In jpql : select a from Account a;
+
+                            OR, from Account;  // It is a shortcut
+
+
+        Ex : Getting all the records from the DB
+        ------------------------------------------
+
+            JPQLMain
+            ----------
+
+                public class JPQLMain {
+                    
+                    public static void main(String[] args) {
+                        
+                        EntityManager em= EMUtil.provideEntityManager();
+                        
+                        
+                        //String jpql= "select a from Account a";
+                        String jpql= "from Account";
+                        Query q= em.createQuery(jpql);
+                        
+                        List<Account> list= q.getResultList();
+                        
+                        for(Account acc:list){
+                            System.out.println(acc);
+                        }		
+                    }
+                }
+
+
+        Ex : Search on non-pk
+        -----------------------
+
+            EntityManager em = EMUtil.provideEntityManager();
+
+
+            // String jpql = "select a from Account a where a.name = 'Ram'";
+            String jpql = "from Account where name = 'Ram'";
+
+            Query q = em.createQuery(jpql);
+            
+
+            List<Account> list = q.getResultList();
+            
+            for(Account acc:list) {
+                System.out.println(acc);
+            }
+
+
+            -- If we are confirmed that only one row will come then
+
+                EntityManager em = EMUtil.provideEntityManager();
+		
+                
+                // String jpql = "select a from Account a where a.name = 'Ram'";
+                String jpql = "from Account where name = 'Ram'";
+
+                Query q= em.createQuery(jpql);
+                
+
+                // Object obj= q.getSingleResult();
+                // Account acc= (Account)obj;
+                
+
+                Account acc= (Account)q.getSingleResult();
+                
+                System.out.println(acc);
+
+
+
+
+                -- If the above query will return more that one result then it will throw a runtime exception
+
+                -- In order to avoid the downcasting problem we should use TypedQuery instead of Query obj.
+
+                -- TypedQuery is the child interface of Query interface.
+
+                    Ex :
+
+                        EntityManager em = EMUtil.provideEntityManager();
+                        
+                        
+                        // String jpql = "select a from Account a where a.name = 'Ram'";
+                        String jpql = "from Account where name = 'Ram'";
+
+
+                        TypedQuery<Account> q= em.createQuery(jpql,Account.class);
+                        
+
+                        Account acc= q.getSingleResult();
+                        
+                        System.out.println(acc);
+
+
+		EX : Bulk update
+		------------------
+
+			EntityManager em = EMUtil.provideEntityManager();
+			
+			
+			String jpql = "update Account set balance = balance + 500";
+			
+			Query q = em.createQuery(jpql);
+			
+			
+			em.getTransaction().begin();
+			
+			int x = q.executeUpdate();
+			
+			em.getTransaction().commit();
+			
+			
+			System.out.println(x + " rows updated...");
+			
+			
+			em.close();
+
+
+		Ex : Using positional parameter
+		---------------------------------
+
+			EntityManager em= EMUtil.provideEntityManager();
+			
+			
+			String jpql= "update Account set balance=balance+?1 where name=?2";
+			
+			Query q= em.createQuery(jpql);
+			
+			q.setParameter(1, 1000);
+			q.setParameter(2, "Rahul");
+			
+			em.getTransaction().begin();
+			int x=q.executeUpdate();
+			em.getTransaction().commit();
+			
+			
+			System.out.println(x+" record updated...");
+
+
+			-- Index value can start with any number... and should be in a sequence.
+
+		Ex : Using named parameter
+		----------------------------
+
+			EntityManager em = EMUtil.provideEntityManager();
+			
+			
+			String jpql= "update Account set balance=balance+:bal where name=:nm";
+			
+			Query q= em.createQuery(jpql);
+			
+			q.setParameter("bal", 600);
+			q.setParameter("nm", "Ramesh");
+			
+			em.getTransaction().begin();
+			int x=q.executeUpdate();
+			em.getTransaction().commit();
+			
+			
+			System.out.println(x+" record updated...");
+
+
+		***Note: For Insert operation we don't use JPQL, we always use persist method of EntityManager or we can make use of NativeQuery.
+
+
+		Ex : Inserting record using JPQL
+		----------------------------------
+
+			EntityManager em= EMUtil.provideEntityManager();
+			
+
+			String jpql= "insert into Account(balance, name) values(75000,'Amit')";
+
+			Query q= em.createQuery(jpql);
+
+			
+			em.getTransaction().begin();
+
+			int x= q.executeUpdate();
+			
+			em.getTransaction().commit();
+			
+
+			System.out.println(x+" row inserted...");
+			
+
+			em.close();
+
+
+		-- Whenever we try to project all the columns then the return type of the TypedQuery will be the entire Entity object.
+
+		-- TypedQuery is used with only one record type of data, if we project List(multiple data) then Query object is enough.
+
+
+
+
+		1. If we try to accees only one column then the return type will be
+
+			either String object,
+			or any Wrapper class object (Integer,Float)
+			or LocalDate
+
+		2. If all column then the return type will be the Entity class(internally it will be mapped).
+
+		3. If few columns then the return type will be Object[]. In this array each index will represent each column.
+
+			name : String
+			balance : Integer
+			all columns : Account object
+			name,balance : Object[]
+
+
+		Ex : for 1 row and 1 column
+		-----------------------------
+
+			EntityManager em= EMUtil.provideEntityManager();
+
+			//String jpql ="select name from Account where accno =:ano";		
+			String jpql ="select a.name from Account a where accno =:ano";	
+			Query q= em.createQuery(jpql);
+
+			q.setParameter("ano", 105);
+			
+			String n= (String)q.getSingleResult();
+			
+			System.out.println(n);
+
+
+			// TypedQuery<String> q=em.createQuery(jpql,String.class);
+			//
+			// q.setParameter("ano", 105);
+			//
+			// String n= q.getSingleResult();
+			//
+			//
+			// System.out.println(n);
+		
+
+		Ex : For multiple rows and 1 column
+		-------------------------------------
+
+			EntityManager em= EMUtil.provideEntityManager();
+			
+			
+			String jpql= "select balance from Account";
+			
+			Query<Integer> q=em.createQuery(jpql);
+			
+			List<Integer> list= q.getResultList();
+			
+			System.out.println(list);
+
+
+		Ex : For few columns and all rows
+		-----------------------------------
+
+			EntityManager em= EMUtil.provideEntityManager();
+				
+				
+			String jpql= "select name,balance from Account";
+			
+			Query q= em.createQuery(jpql);
+
+		
+		
+			List<Object[]> results= q.getResultList();
+		
+			for(Object[] or: results) {
+				
+				String name= (String)or[0];
+				int balance= (Integer)or[1];
+				
+				System.out.println("Name is "+name);
+				System.out.println("Balance is :"+balance);
+				
+				System.out.println("===========================");
+			}
+
+
+		Ex : Few column with single record
+		------------------------------------
+
+			Demo.java
+			-----------
+
+				package com.masai.usecases;
+
+				import java.util.List;
+
+				import javax.persistence.EntityManager;
+				import javax.persistence.Query;
+				import javax.persistence.TypedQuery;
+
+				import com.masai.model.Account;
+				import com.masai.utility.EMUtil;
+
+				public class JPQLUseCase {
+
+					public static void main(String[] args) {
+					
+						EntityManager em= EMUtil.provideEntityManager();
+						
+						String jpql= "select name,balance from Account where accno= :ano";
+						
+
+						// Query q= em.createQuery(jpql);
+						//
+						// q.setParameter("ano", 104);
+						//
+						// Object obj= q.getSingleResult();
+						//
+						// Object[] or= (Object[])obj;
+
+						
+						TypedQuery<Object[]> tq= em.createQuery(jpql, Object[].class);
+						
+						tq.setParameter("ano",104);
+						
+						Object[] or= tq.getSingleResult();
+						
+						
+						String name= (String)or[0];
+						int balance= (Integer)or[1];
+						
+						System.out.println("Name is "+name);
+						System.out.println("Balance is :"+balance);
+								
+						em.close();
+					}
+
+				}
+
+
+		Ex : Aggregrate function
+		--------------------------
+
+			-- The aggregrate function will return 
+
+				min, max, count : Integer
+				avg : Double
+				sum : Long
+
+
+			Ex :
+
+				EntityManager em= EMUtil.provideEntityManager();
+				
+				
+				String jpql= "select sum(balance) from Account";
+				
+				TypedQuery<Long> q=em.createQuery(jpql,Long.class);
+				
+				long result= q.getSingleResult();
+				
+				System.out.println(result);
+
+
+
+
+Named Queries:-
+============
+
+--if we require to write same query again and again in multiple Data 
+access layer classes, it is recomended to use NamedQuery, 
+
+--in which we centralize the query with a unique name inside the Entity class.
+
+and refer that name in all the Data access layer classes.
+
+
+
+
+ex:-
+
+
+Account.java:- (Entity class):-
+-----------------------------------
+
+
+
+@Entity
+@NamedQuery(name = "Account.getBalance",query = "from Account where balance <:bal")
+public class Account  {
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private int accno;
+	private String name;
+	private int balance;
+
+
+
+
+
+
+
+JPQLMain.java:-
+------------------
+
+
+public class JPQLMain {
+	
+	public static void main(String[] args) {
+		
+		EntityManager em= EMUtil.provideEntityManager();
+		
+		
+		Query q= em.createNamedQuery("Account.getBalance");
+		
+		q.setParameter("bal", 5000);
+		
+		List<Account> list= q.getResultList();
+		
+		list.forEach(a -> System.out.println(a));
+		
+	}
+
+}
+
+using Multiple NamedQueries:
+--------------------------------------
+
+@Entity
+
+@NamedQueries({
+	
+	@NamedQuery(name = "Account.getBalance",query = "from Account where balance <:bal"),
+	@NamedQuery(name = "Account.getName",query = "from Account where name =:nm")
+	
+})
+public class Account {
+	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private int accno;
+	private String name;
+	private int balance;
+	
+
+
+
+
+
+
+NativeQueries:-
+============
+
+--here we write the Query in the term of tables and their columns. (normal sql)
+
+
+
+		EntityManager em= EMUtil.provideEntityManager();
+		
+		
+		String nq="select * from account"; //here account is the table name
+		
+	 	Query q= em.createNativeQuery(nq, Account.class);
+	
+	 	List<Account> list= q.getResultList();
+	 	
+	 	list.forEach(a -> System.out.println(a));
+
+	 	
+NamedNativeQuery:-
+------------------------
+
+Account.java:-
+-----------------
+
+
+@Entity
+@NamedNativeQuery(name="Account.allAccount" ,query = "select * from account",resultClass=Account.class)
+public class Account  {
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private int accno;
+	private String name;
+	private int balance;
+	
+--
+--
+}
+
+JPQLMain.java:-
+-------------------
+
+
+public class JPQLMain {
+	
+	public static void main(String[] args) {
+		
+		EntityManager em= EMUtil.provideEntityManager();
+		
+	 	Query q= em.createNamedQuery("Account.allAccount" );
+	
+	 	List<Account> list= q.getResultList();
+	 	
+	 	list.forEach(a -> System.out.println(a));		
+	}
+
+}
+	
+
+--Native queries we can utilize in case of very complex query.
