@@ -303,8 +303,6 @@
 		-- TypedQuery is used with only one record type of data, if we project List(multiple data) then Query object is enough.
 
 
-
-
 		1. If we try to accees only one column then the return type will be
 
 			either String object,
@@ -574,7 +572,6 @@
 
 				JPQLMain
 				----------
-
 
 					public class JPQLMain {
 						
