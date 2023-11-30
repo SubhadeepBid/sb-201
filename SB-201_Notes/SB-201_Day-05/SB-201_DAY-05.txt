@@ -466,152 +466,130 @@
 				System.out.println(result);
 
 
+		Named Queries
+		---------------
+
+			-- If we require to write same query again and again in multiple Data access layer classes, it is recomended to use NamedQuery, 
+
+			-- In which we centralize the query with a unique name inside the Entity class and refer that name in all the Data access layer classes.
+
+				Ex :
+
+					Account (Entity class)
+					------------------------
+
+						@Entity
+						@NamedQuery(name = "Account.getBalance",query = "from Account where balance <:bal")
+						public class Account  {
+							
+							@Id
+							@GeneratedValue(strategy = GenerationType.AUTO)
+							private int accno;
+							private String name;
+							private int balance;
+
+						}
+
+					JPQLMain
+					----------
+
+						public class JPQLMain {
+							
+							public static void main(String[] args) {
+								
+								EntityManager em= EMUtil.provideEntityManager();
+								
+								
+								Query q= em.createNamedQuery("Account.getBalance");
+								
+								q.setParameter("bal", 5000);
+
+								
+								List<Account> list= q.getResultList();
+								
+								list.forEach(a -> System.out.println(a));
+								
+							}
+
+						}
 
 
-Named Queries:-
-============
+			Using Multiple NamedQueries
+			-----------------------------
 
---if we require to write same query again and again in multiple Data 
-access layer classes, it is recomended to use NamedQuery, 
-
---in which we centralize the query with a unique name inside the Entity class.
-
-and refer that name in all the Data access layer classes.
-
-
-
-
-ex:-
-
-
-Account.java:- (Entity class):-
------------------------------------
-
-
-
-@Entity
-@NamedQuery(name = "Account.getBalance",query = "from Account where balance <:bal")
-public class Account  {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private int accno;
-	private String name;
-	private int balance;
-
-
-
-
-
-
-
-JPQLMain.java:-
-------------------
-
-
-public class JPQLMain {
-	
-	public static void main(String[] args) {
-		
-		EntityManager em= EMUtil.provideEntityManager();
-		
-		
-		Query q= em.createNamedQuery("Account.getBalance");
-		
-		q.setParameter("bal", 5000);
-		
-		List<Account> list= q.getResultList();
-		
-		list.forEach(a -> System.out.println(a));
-		
-	}
-
-}
-
-using Multiple NamedQueries:
---------------------------------------
-
-@Entity
-
-@NamedQueries({
-	
-	@NamedQuery(name = "Account.getBalance",query = "from Account where balance <:bal"),
-	@NamedQuery(name = "Account.getName",query = "from Account where name =:nm")
-	
-})
-public class Account {
-	
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private int accno;
-	private String name;
-	private int balance;
+				@Entity
+				@NamedQueries({
+					
+					@NamedQuery(name = "Account.getBalance",query = "from Account where balance <:bal"),
+					@NamedQuery(name = "Account.getName",query = "from Account where name =:nm")
+					
+				})
+				public class Account {
+					
+					@Id
+					@GeneratedValue(strategy = GenerationType.AUTO)
+					private int accno;
+					private String name;
+					private int balance;
+				}
 	
 
+		Native Queries
+		----------------
 
+			-- Here we write the Query in the term of tables and their columns (Normal SQL)
 
+				Ex : 
 
+					EntityManager em= EMUtil.provideEntityManager();
+					
+					
+					String nq="select * from account"; // Here account is the table name
+					
+					Query q= em.createNativeQuery(nq, Account.class);
+				
 
-
-NativeQueries:-
-============
-
---here we write the Query in the term of tables and their columns. (normal sql)
-
-
-
-		EntityManager em= EMUtil.provideEntityManager();
-		
-		
-		String nq="select * from account"; //here account is the table name
-		
-	 	Query q= em.createNativeQuery(nq, Account.class);
-	
-	 	List<Account> list= q.getResultList();
-	 	
-	 	list.forEach(a -> System.out.println(a));
+					List<Account> list= q.getResultList();
+					
+					list.forEach(a -> System.out.println(a));
 
 	 	
-NamedNativeQuery:-
-------------------------
+			Named Native Query
+			--------------------
 
-Account.java:-
------------------
+				Account
+				---------
 
+					@Entity
+					@NamedNativeQuery(name="Account.allAccount", query = "select * from account", resultClass=Account.class)
+					public class Account  {
+						
+						@Id
+						@GeneratedValue(strategy = GenerationType.AUTO)
+						private int accno;
+						private String name;
+						private int balance;
+						
+					}
 
-@Entity
-@NamedNativeQuery(name="Account.allAccount" ,query = "select * from account",resultClass=Account.class)
-public class Account  {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private int accno;
-	private String name;
-	private int balance;
-	
---
---
-}
-
-JPQLMain.java:-
--------------------
+				JPQLMain
+				----------
 
 
-public class JPQLMain {
-	
-	public static void main(String[] args) {
-		
-		EntityManager em= EMUtil.provideEntityManager();
-		
-	 	Query q= em.createNamedQuery("Account.allAccount" );
-	
-	 	List<Account> list= q.getResultList();
-	 	
-	 	list.forEach(a -> System.out.println(a));		
-	}
+					public class JPQLMain {
+						
+						public static void main(String[] args) {
+							
+							EntityManager em= EMUtil.provideEntityManager();
+							
+							Query q= em.createNamedQuery("Account.allAccount" );
+						
+							List<Account> list= q.getResultList();
+							
+							list.forEach(a -> System.out.println(a));		
+						}
 
-}
+					}
 	
 
---Native queries we can utilize in case of very complex query.
+				-- Native queries we can utilize in case of very complex query.

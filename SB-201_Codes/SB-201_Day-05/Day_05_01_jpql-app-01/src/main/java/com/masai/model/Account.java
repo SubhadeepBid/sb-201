@@ -4,9 +4,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedNativeQuery;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.SequenceGenerator;
 
 @Entity
+@NamedQuery(name = "Account.getBalance", query = "from Account where balance < :bal")
+@NamedNativeQuery(name = "Account.allAccount", query = "select * from account", resultClass = Account.class)
 public class Account {
 	
 	@Id
