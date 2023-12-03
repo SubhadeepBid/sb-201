@@ -1,5 +1,6 @@
 package com.masai.model;
 
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,6 +19,7 @@ public class Employee {
 	
 	private int salary;
 	
+	@Embedded
 	private Address address;
 	
 	public Employee() {
